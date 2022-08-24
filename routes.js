@@ -62,3 +62,81 @@ function asyncHandler(cb){
     res.json(courses);
   
   }));
+
+  //new course 
+  router.post('/courses', authenticateUser, asyncHandler(async(req, res) => {
+
+    try {
+      const course = await Course.create(req.body);
+  
+      res.status(201);
+      res.location(`/courses/${course.id}`).end();
+    } catch (error) {
+      // If there is a sequelize error 
+      if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+        const errors = error.errors.map(err => err.message);
+        res.status(400).json({ errors });   
+      } else {
+        throw error;
+      }
+    }
+    
+  }));
+
+  router.get('/courses/:id', asyncHandler(async(req, res) => {
+
+    // Get course, and include the model associations
+    const course = await Course.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: "user",
+        }
+      ]
+    })  
+  
+    res.status(200);
+    res.json(course);
+  
+  }));
+
+  //updating course 
+
+  router.put('/courses/:id', authenticateUser, asyncHandler(async(req, res) => {
+
+    try {
+      const course = await Course.findByPk(req.params.id)
+  
+      await course.update(req.body);
+    
+      res.status(204).json();
+    } catch (error) {
+      // If there is a sequelize error 
+      if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+        const errors = error.errors.map(err => err.message);
+        res.status(400).json({ errors });   
+      } else {
+        throw error;
+      }
+    }
+  
+  }));
+  
+  // deletes course 
+  router.delete('/courses/:id', authenticateUser, asyncHandler(async(req, res) => {
+  
+    const course = await Course.findByPk(req.params.id)
+  
+    if (course) {
+      await course.destroy();
+    
+      res.status(204).json();
+    } else {
+      res.status(404).json({
+        message: 'Route Not Found',
+      });
+    }
+  
+  }));
+  
+  module.exports = router;
