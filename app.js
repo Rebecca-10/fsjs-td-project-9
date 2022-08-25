@@ -22,19 +22,6 @@ app.use(morgan('dev'));
 
 app.use('/api', routes);
 
-(async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('Connection to database successful!')
-
-    console.log('Syncronizing the models with the datatbase...');
-    await sequelize.sync();
-
-  } catch (error){
-    console.error('Error connecting to the database:', error)
-    throw error;
-  }
-})
 
 
 // setup a friendly greeting for the root route
